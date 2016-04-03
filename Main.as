@@ -24,10 +24,9 @@
 	import vk.events.*;
 	import vk.ui.VKButton;
 	
-	import PlayerGame;
+	import Box;
 	
 	public class Main extends Sprite {
-		
 		
 		private var loader:URLLoader = new URLLoader();
 		private var photoLoader:Loader = new Loader();
@@ -36,7 +35,7 @@
 		
 		var startGame:Boolean = false,
 			gameOver:Boolean = false,
-			player:Player = new Player(),
+			player:Player,
 			shape:Shape,
 			shape2:Shape,
 			shapeArray:Vector.<Object>,
@@ -90,6 +89,8 @@
 		var box:Object;
 		
 		public function Main() {
+			Game.SetStage(stage);
+			
 			tf = new TextField();
 			tf.x = 10;
 			tf.y = 50;
@@ -184,12 +185,7 @@
 			* создание персонажа
 			*
 			*/
-			player = new Player();
-			player.score = 0;
-			player.speed = 3;
-			player.rigth = false;
-			player.x = stage.stageWidth/2;
-			player.y = stage.stageHeight/2;
+			player = new Player(stage.stageWidth/2, stage.stageHeight/2);
 			//player.cacheAsBitmap = true;
 			stage.addChild(player);
 
@@ -230,7 +226,7 @@
 				bothCollision: true
 			};
 
-			for (var s:int = 1; s < shapeArray.length-1; s++){
+			for (var s:int = 1; s < shapeArray.length-1; s++) {
 				var rand:Boolean = Math.random()<.5;
 				var thisShape:Object = shapeArray[s];
 				
@@ -309,7 +305,7 @@
 			gameOverText.y = 100;
 
 
-			gameOverScoreField.text = player.score;
+			gameOverScoreField.text = player.score.toString();
 			gameOverScoreField.width = 500;
 			gameOverScoreField.y -= 70;
 			gameOverScoreField.x = -gameOverScoreField.width/2;
@@ -371,7 +367,7 @@
 				toThisColorWhite.blueOffset += 100; if (toThisColorWhite.blueOffset > 255) toThisColorWhite.blueOffset = 255;
 			}
 			
-			scoreField.text = player.score;
+			scoreField.text = player.score.toString();
 			
 			animateUI();
 			
@@ -517,7 +513,7 @@
 					addPlayer = true;
 					gamesPlayed += 1;
 					gamesPlayedField.text = 'GAMES PLAYED: '+gamesPlayed;
-					gameOverScoreField.text = player.score;
+					gameOverScoreField.text = player.score.toString();
 					VK.api('storage.set', { key:'gamesPlayed', value:gamesPlayed, user_id:flashVars['viewer_id'] }, function(){}, function(){});
 					
 					//смена цвета плашки со счетом
@@ -579,7 +575,7 @@
 		*
 		*/
 		function keyDownFunc(e:KeyboardEvent):void {
-			if(e.keyCode === 32 && !spaceDown){
+			if(e.keyCode === 32 && !spaceDown) {
 				spaceDown = true;
 				if (!startGame) {
 					stage.addChild(scoreField);
@@ -598,7 +594,7 @@
 					player.score += 1;
 				}
 			}
-			if(e.keyCode === 86){
+			if(e.keyCode === 86) {
 				startGame = false;
 			}
 		}
@@ -628,7 +624,7 @@
 			return Math.sin(dir*Math.PI/180)*len;
 		}
 
-		function createBox():void{
+		function createBox():void {
 			
 			var newBoxPoint:Object = shapeArray[0];
 			var thisShapeLen:int = shapeArray.length-1;
@@ -702,7 +698,7 @@
 				rand: true
 			};
 
-			for (var s:int = 1; s < shapeArray.length-1; s++){
+			for (var s:int = 1; s < shapeArray.length-1; s++) {
 				var rand:Boolean = Math.random()<.5;
 				var thisShape:Object = shapeArray[s];
 				
@@ -727,7 +723,7 @@
 			gameInfo.movY = stage.stageHeight/1.5;
 		}
 
-		function gameOverFunc():void{
+		function gameOverFunc():void {
 			
 			toThisColor.color = 0x3F6CA3;
 			
@@ -751,7 +747,7 @@
 			},500);
 		}
 		
-		function toColorAnim(fromColor, toColor):ColorTransform{
+		function toColorAnim(fromColor, toColor):ColorTransform {
 			//var returnColor:ColorTransform = new ColorTransform();
 			fromColor.redOffset += (toColor.redOffset-fromColor.redOffset)/25;
 			fromColor.greenOffset += (toColor.greenOffset-fromColor.greenOffset)/25;
@@ -836,7 +832,7 @@
 				shape.graphics.drawPath(commands,coords);
 				shape.graphics.endFill();
 				
-				if (box.bonus){
+				if (box.bonus) {
 					shape.graphics.beginFill(0xFD65EE);
 					commands= new Vector.<int>(3,true);
 					coords= new Vector.<Number>(6,true);
