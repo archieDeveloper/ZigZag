@@ -24,7 +24,10 @@
 	import vk.events.*;
 	import vk.ui.VKButton;
 	
+	import PlayerGame;
+	
 	public class Main extends Sprite {
+		
 		
 		private var loader:URLLoader = new URLLoader();
 		private var photoLoader:Loader = new Loader();
