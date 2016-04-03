@@ -6,6 +6,12 @@
 		
 		public static var stage:Stage = null;
 		
+		// игра началась?
+		public static var isStarted:Boolean = false;
+		
+		// игра проиграна?
+		public static var isOver:Boolean = false;
+		
 		public function Game() {
 		}
 		

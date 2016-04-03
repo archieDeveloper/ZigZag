@@ -20,7 +20,6 @@
 		
 		public function Player(positionX:int = 0, positionY:int = 0) {
 			// constructor code
-			trace(Game.stage);
 			x = positionX;
 			y = positionY;
 		}

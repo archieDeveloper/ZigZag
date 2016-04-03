@@ -33,27 +33,16 @@
 		
 		var spaceDown:Boolean = false;
 		
-		var startGame:Boolean = false,
-			gameOver:Boolean = false,
-			player:Player,
+		var player:Player,
 			shape:Shape,
 			shape2:Shape,
-			shapeArray:Vector.<Object>,
+			//shapeArray:Vector.<Object>,
+			boxCollection:BoxCollection = new BoxCollection(),
 			newScoreF:int = 0,
 			oldScoreF:int = 0;
 		
 		var flashVars: Object = stage.loaderInfo.parameters as Object;
 		var VK: APIConnection = new APIConnection(flashVars);
-		
-		var matrix:Matrix = new Matrix();
-		
-		var thisColor:ColorTransform = new ColorTransform();
-		var toThisColor:ColorTransform = new ColorTransform();
-		
-		var thisColorWhite:ColorTransform = new ColorTransform();
-		var toThisColorWhite:ColorTransform = new ColorTransform();
-		
-		var arrayColor:Array = new Array();
 		
 		var alphaF:Boolean = true;
 		var gravity:Number = 0;
@@ -85,8 +74,8 @@
 		var gamesPlayed:int;
 		var bestScore:int;
 		
-		var lastBox:Object;
-		var box:Object;
+		var lastBox:Box;
+		var box:Box;
 		
 		public function Main() {
 			Game.SetStage(stage);
@@ -159,20 +148,20 @@
 		public function initApp():void {
 			
 			
-			matrix.createGradientBox(stage.stageWidth*2, stage.stageHeight,0,-stage.stageWidth/2,0);
+			Box.matrix.createGradientBox(stage.stageWidth*2, stage.stageHeight,0,-stage.stageWidth/2,0);
 			
-			thisColor.color = 0x3F6CA3;
-			toThisColor.color = 0x3F6CA3;
+			Box.firstColor.color = 0x3F6CA3;
+			Box.toFirstColor.color = 0x3F6CA3;
 			
-			thisColorWhite.color = thisColor.color;
+			Box.secondColor.color = Box.firstColor.color;
 			
-			thisColorWhite.redOffset += 100; if (thisColorWhite.redOffset > 255) thisColorWhite.redOffset = 255;
-			thisColorWhite.greenOffset += 100; if (thisColorWhite.greenOffset > 255) thisColorWhite.greenOffset = 255;
-			thisColorWhite.blueOffset += 100; if (thisColorWhite.blueOffset > 255) thisColorWhite.blueOffset = 255;
+			Box.secondColor.redOffset += 100; if (Box.secondColor.redOffset > 255) Box.secondColor.redOffset = 255;
+			Box.secondColor.greenOffset += 100; if (Box.secondColor.greenOffset > 255) Box.secondColor.greenOffset = 255;
+			Box.secondColor.blueOffset += 100; if (Box.secondColor.blueOffset > 255) Box.secondColor.blueOffset = 255;
 			
-			toThisColorWhite.color = thisColorWhite.color;
+			Box.toSecondColor.color = Box.secondColor.color;
 			
-			arrayColor = [
+			Box.colorList = [
 				0x9A8E46,
 				0x8E2E29,
 				0x666A8D,
@@ -205,56 +194,15 @@
 			* создание 20 платформ
 			*
 			*/
-			shapeArray = new Vector.<Object>(38,true);
-
-			shapeArray[0] = {
-				x: stage.stageWidth/2,
-				y: stage.stageHeight/2,
-				width: 1000,
-				height: 500,
-				rand: true,
-				bothCollision: true
-			};
-
-
-			shapeArray[1] = {
-				x: shapeArray[0].x+50,
-				y: shapeArray[0].y-shapeArray[0].height/2,
-				width: 100,
-				height: 50,
-				rand: true,
-				bothCollision: true
-			};
-
-			for (var s:int = 1; s < shapeArray.length-1; s++) {
-				var rand:Boolean = Math.random()<.5;
-				var thisShape:Object = shapeArray[s];
-				
-				if ((thisShape.x > stage.stageWidth-thisShape.width && rand) ||
-					(thisShape.x < thisShape.width && !rand)) rand = !rand;
-				
-				var newBoxPoint:Object = {
-					x: thisShape.x+(rand ? thisShape.width/2 : -thisShape.width/2),
-					y: thisShape.y-thisShape.height/2,
-					width: 100,
-					height: 50,
-					rand: rand,
-					bothCollision: false,
-					bonus: Math.floor(Math.random()*5) ? false : true
-				};
-
-				thisShape.rand = rand;
-				shapeArray[s+1] = newBoxPoint;
-			}
-				
+			boxCollection.generate();				
 			
-			/*fpsField.x = 10;
+			fpsField.x = 10;
 			fpsField.y = 10;
 			fpsField.width = 500;
 			stage.addChild(fpsField);
 			setInterval(function(){
 				fpsField.text = 'FPS: '+Math.round(fps)+'\nID: '+flashVars['viewer_id']+'\nMemory: '+System.totalMemory/1024/1024;
-			}, 400);*/
+			}, 400);
 			/*
 			*
 			* Добавление текста со счетом
@@ -359,12 +307,12 @@
 				
 				player.speed += 0.05;
 				
-				toThisColor.color = arrayColor[Math.floor(Math.random()*5)];
-				toThisColorWhite.color = toThisColor.color;
+				Box.toFirstColor.color = Box.colorList[Math.floor(Math.random()*5)];
+				Box.toSecondColor.color = Box.toFirstColor.color;
 				
-				toThisColorWhite.redOffset += 100; if (toThisColorWhite.redOffset > 255) toThisColorWhite.redOffset = 255;
-				toThisColorWhite.greenOffset += 100; if (toThisColorWhite.greenOffset > 255) toThisColorWhite.greenOffset = 255;
-				toThisColorWhite.blueOffset += 100; if (toThisColorWhite.blueOffset > 255) toThisColorWhite.blueOffset = 255;
+				Box.toSecondColor.redOffset += 100; if (Box.toSecondColor.redOffset > 255) Box.toSecondColor.redOffset = 255;
+				Box.toSecondColor.greenOffset += 100; if (Box.toSecondColor.greenOffset > 255) Box.toSecondColor.greenOffset = 255;
+				Box.toSecondColor.blueOffset += 100; if (Box.toSecondColor.blueOffset > 255) Box.toSecondColor.blueOffset = 255;
 			}
 			
 			scoreField.text = player.score.toString();
@@ -374,11 +322,11 @@
 			shape.graphics.clear();
 			shape2.graphics.clear();
 			
-			thisColor = toColorAnim(thisColor,toThisColor);
-			thisColorWhite = toColorAnim(thisColorWhite,toThisColorWhite);
+			Box.firstColor = toColorAnim(Box.firstColor, Box.toFirstColor);
+			Box.secondColor = toColorAnim(Box.secondColor, Box.toSecondColor);
 			/*player.x = mouseX;
 			player.y = mouseY;*/
-			if (startGame && !gameOver) {
+			if (Game.isStarted && !Game.isOver) {
 				player.arrowsX = lengthdirX((player.speed*100)*dt,26.57);
 				player.arrowsY = lengthdirY((player.speed*100)*dt,26.57);
 				
@@ -387,15 +335,15 @@
 				/*player.arrowsX = lengthdirX((player.speed+2),26.57);
 				player.arrowsY = lengthdirY((player.speed+2),26.57);*/
 				
-				lastBox = shapeArray[shapeArray.length-1];
+				lastBox = boxCollection.getLast();
 				if (lastBox.y > -lastBox.height/2-150) {
 					createBox();
 				}
 				
-				var shapeArrayNum:int = shapeArray.length-1;
+				var shapeArrayNum:int = boxCollection.getLastIndex();
 				
 				for(i = shapeArrayNum; i >= 0; i--) {
-					box = shapeArray[i];
+					box = boxCollection.getOnIndex(i);
 					var boxX = box.x,
 						boxY = box.y,
 						boxW = box.width,
@@ -460,7 +408,7 @@
 						
 						if (coll){
 							player.rigth = !box.rand;
-							gameOver = true;
+							Game.isOver = true;
 							gameOverFunc();
 							stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
 							retryButton.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
@@ -474,30 +422,29 @@
 						box.y+=6;
 					}
 					box.y+=player.arrowsY;
-					drawBoxes(box,shape,-stage.stageHeight/2);
+					Render.box(box,shape,-stage.stageHeight/2);
 				}
 				player.x += player.arrowsX * (player.rigth ? 1 : -1);
 			}
 			
-			if (!startGame && !gameOver) {
-				shapeArrayNum = shapeArray.length-1;
+			if (!Game.isStarted && !Game.isOver) {
+				shapeArrayNum = boxCollection.getLastIndex();
 				
 				for(i = shapeArrayNum; i >= 0; i--) {
-					box = shapeArray[i];
-					drawBoxes(box,shape,-stage.stageHeight/2);
+					box = boxCollection.getOnIndex(i);
+					Render.box(box,shape,-stage.stageHeight/2);
 				}
 			}
-			
-			if (gameOver) {
-				shapeArrayNum = shapeArray.length-1;
+			if (Game.isOver) {
+				shapeArrayNum = boxCollection.getLastIndex();
 				
 				for(i = shapeArrayNum; i >= 0; i--) {
-					box = shapeArray[i];
+					box = boxCollection.getOnIndex(i);
 					if (box.y-stage.stageHeight-box.height/2 + stage.stageHeight/3 > 0){
 						box.y+=6;
 					}
-					drawBoxes(box,shape,-stage.stageHeight/2);
-					drawBoxes(box,shape2,stage.stageHeight/2);
+					Render.box(box,shape,-stage.stageHeight/2);
+					Render.box(box,shape2,stage.stageHeight/2);
 				}
 				
 				if (!addPlayer){
@@ -577,25 +524,25 @@
 		function keyDownFunc(e:KeyboardEvent):void {
 			if(e.keyCode === 32 && !spaceDown) {
 				spaceDown = true;
-				if (!startGame) {
+				if (!Game.isStarted) {
 					stage.addChild(scoreField);
 					
 					
 					stage.removeChild(logo);
 					stage.removeChild(gameInfo);
 					stage.removeChild(spaceToPlay);
-					startGame = true;
+					Game.isStarted = true;
 					player.score -= 1;
 					logo.movY = -100;
 					gameInfo.movY = stage.stageHeight+100;
 				}
-				if (!gameOver) {
+				if (!Game.isOver) {
 					player.rigth = !player.rigth;
 					player.score += 1;
 				}
 			}
 			if(e.keyCode === 86) {
-				startGame = false;
+				Game.isStarted = false;
 			}
 		}
 		function keyUpFunc(e:KeyboardEvent):void {
@@ -625,16 +572,14 @@
 		}
 
 		function createBox():void {
+			var newBoxPoint:Box = boxCollection.getFirst();
 			
-			var newBoxPoint:Object = shapeArray[0];
-			var thisShapeLen:int = shapeArray.length-1;
-			
-			for(var i:int = 0; i < thisShapeLen; i++){
-				shapeArray[i] = shapeArray[i+1];
+			for(var i:int = 0, thisShapeLen:int = boxCollection.getLastIndex(); i < thisShapeLen; i++){
+				boxCollection.setOnIndex(i, boxCollection.getOnIndex(i+1));
 			}
 			
 			var rand:Boolean = Math.random()<.5;
-			var thisShape:Object = shapeArray[thisShapeLen];
+			var thisShape:Object = boxCollection.getLast();
 			if ((thisShape.x > stage.stageWidth-thisShape.width && rand) ||
 				(thisShape.x < thisShape.width && !rand)) rand = !rand;
 			
@@ -647,10 +592,10 @@
 			newBoxPoint.bonus = Math.floor(Math.random()*5) ? false : true;
 
 			thisShape.rand = rand;
-			shapeArray[thisShapeLen] = newBoxPoint;
+			boxCollection.setOnIndex(thisShapeLen, newBoxPoint);
 		}
 
-		function retryGame():void{
+		function retryGame():void {
 			setTimeout(function(){
 				gameOverText.movX = stage.stageWidth+gameOverText.width;
 			},0);
@@ -669,8 +614,8 @@
 			player.rigth = false;
 			player.x = stage.stageWidth/2;
 			player.y = stage.stageHeight/2;
-			startGame = false;
-			gameOver = false;
+			Game.isStarted = false;
+			Game.isOver = false;
 			addPlayer = false;
 			player.speed = 3;
 			
@@ -678,45 +623,7 @@
 			
 			gravity = 0;
 			
-			shapeArray = new Vector.<Object>(38,true);
-
-			shapeArray[0] = {
-				x: stage.stageWidth/2,
-				y: stage.stageHeight/2,
-				width: 1000,
-				height: 500,
-				rand: true,
-				bothCollision: true
-			};
-
-
-			shapeArray[1] = {
-				x: shapeArray[0].x+50,
-				y: shapeArray[0].y-shapeArray[0].height/2,
-				width: 100,
-				height: 50,
-				rand: true
-			};
-
-			for (var s:int = 1; s < shapeArray.length-1; s++) {
-				var rand:Boolean = Math.random()<.5;
-				var thisShape:Object = shapeArray[s];
-				
-				if ((thisShape.x > stage.stageWidth-thisShape.width && rand) ||
-					(thisShape.x < thisShape.width && !rand)) rand = !rand;
-				
-				var newBoxPoint:Object = {
-					x: thisShape.x+(rand ? thisShape.width/2 : -thisShape.width/2),
-					y: thisShape.y-thisShape.height/2,
-					width: 100,
-					height: 50,
-					rand: rand,
-					bothCollision: false
-				};
-
-				thisShape.rand = rand;
-				shapeArray[s+1] = newBoxPoint;
-			}
+			boxCollection.generate();
 			
 			logo.movY = stage.stageHeight/2/3;
 			spaceToPlay.alpha = 0;
@@ -725,13 +632,13 @@
 
 		function gameOverFunc():void {
 			
-			toThisColor.color = 0x3F6CA3;
+			Box.toFirstColor.color = 0x3F6CA3;
 			
-			toThisColorWhite.color = toThisColor.color;
+			Box.toSecondColor.color = Box.toFirstColor.color;
 
-			toThisColorWhite.redOffset += 100; if (toThisColorWhite.redOffset > 255) toThisColorWhite.redOffset = 255;
-			toThisColorWhite.greenOffset += 100; if (toThisColorWhite.greenOffset > 255) toThisColorWhite.greenOffset = 255;
-			toThisColorWhite.blueOffset += 100; if (toThisColorWhite.blueOffset > 255) toThisColorWhite.blueOffset = 255;
+			Box.toSecondColor.redOffset += 100; if (Box.toSecondColor.redOffset > 255) Box.toSecondColor.redOffset = 255;
+			Box.toSecondColor.greenOffset += 100; if (Box.toSecondColor.greenOffset > 255) Box.toSecondColor.greenOffset = 255;
+			Box.toSecondColor.blueOffset += 100; if (Box.toSecondColor.blueOffset > 255) Box.toSecondColor.blueOffset = 255;
 			
 			setTimeout(function(){
 				gameOverText.movX = stage.stageWidth/2;
@@ -756,179 +663,6 @@
 			return fromColor;
 		}
 		
-		function drawBoxes(box, shape, ifY):void {
-	
-			if(box.y > ifY && !(box.y > stage.stageHeight+box.height/2) && !(box.y < -box.height/2-150)){
-				shape.graphics.beginFill(thisColor.color);
-
-				var commands:Vector.<int>  = new Vector.<int>(4,true);
-				var coords:Vector.<Number>  = new Vector.<Number>(8,true);
-				
-				commands[0] = 1;
-				coords[0] = box.x;
-				coords[1] = box.y+box.height/2;
-
-				commands[1] = 2;
-				coords[2] = box.x+box.width/2;
-				coords[3] = box.y;
-				
-				commands[2] = 2;
-				coords[4] = box.x+box.width/2;
-				coords[5] = box.y+150;
-
-				commands[3] = 2;
-				coords[6] = box.x;
-				coords[7] = box.y+box.height/2+150;
-				shape.graphics.drawPath(commands,coords);
-				shape.graphics.endFill();
-				
-				
-				shape.graphics.beginFill(thisColor.color);
-									
-				
-				commands[0] = 1;
-				coords[0] = box.x-box.width/2;
-				coords[1] = box.y;
-
-				commands[1] = 2;
-				coords[2] = box.x;
-				coords[3] = box.y+box.height/2;
-				
-				commands[2] = 2;
-				coords[4] = box.x;
-				coords[5] = box.y+box.height/2+150;
-
-				commands[3] = 2;
-				coords[6] = box.x-box.width/2;
-				coords[7] = box.y+150;
-				shape.graphics.drawPath(commands,coords);
-				shape.graphics.endFill();
-				
-				
-				shape.graphics.beginGradientFill(GradientType.RADIAL,
-									[thisColorWhite.color, thisColor.color], 
-									[1, 1], 
-									[0, 255],  
-									matrix,  
-									SpreadMethod.PAD,  
-									InterpolationMethod.LINEAR_RGB,  
-									0);
-				
-				commands[0] = 1;
-				coords[0] = box.x-box.width/2;
-				coords[1] = box.y;
-
-				commands[1] = 2;
-				coords[2] = box.x;
-				coords[3] = box.y-box.height/2;
-				
-				commands[2] = 2;
-				coords[4] = box.x+box.width/2;
-				coords[5] = box.y;
-
-				commands[3] = 2;
-				coords[6] = box.x;
-				coords[7] = box.y+box.height/2;
-				shape.graphics.drawPath(commands,coords);
-				shape.graphics.endFill();
-				
-				if (box.bonus) {
-					shape.graphics.beginFill(0xFD65EE);
-					commands= new Vector.<int>(3,true);
-					coords= new Vector.<Number>(6,true);
-					
-					commands[0] = 1;
-					coords[0] = box.x;
-					coords[1] = box.y;
-
-					commands[1] = 2;
-					coords[2] = box.x-box.width/2/3;
-					coords[3] = box.y-10-box.height/2/3;
-					
-					commands[2] = 2;
-					coords[4] = box.x;
-					coords[5] = box.y-10;
-					shape.graphics.drawPath(commands,coords);
-					shape.graphics.endFill();
-					
-					/**********  2  *********/
-					shape.graphics.beginFill(0xB122A2);
-					
-					commands[0] = 1;
-					coords[0] = box.x;
-					coords[1] = box.y;
-
-					commands[1] = 2;
-					coords[2] = box.x+box.width/2/3;
-					coords[3] = box.y-10-box.height/2/3;
-					
-					commands[2] = 2;
-					coords[4] = box.x;
-					coords[5] = box.y-10;
-					shape.graphics.drawPath(commands,coords);
-					shape.graphics.endFill();
-					
-					/**********  3  *********/
-					shape.graphics.beginFill(0xFE9EF5);
-					
-					commands[0] = 1;
-					coords[0] = box.x;
-					coords[1] = box.y-10;
-
-					commands[1] = 2;
-					coords[2] = box.x-box.width/2/3;
-					coords[3] = box.y-10-box.height/2/3;
-					
-					commands[2] = 2;
-					coords[4] = box.x;
-					coords[5] = box.y-35;
-					shape.graphics.drawPath(commands,coords);
-					shape.graphics.endFill();
-					
-					/**********  4  *********/
-					shape.graphics.beginFill(0xFE43EA);
-					
-					commands[0] = 1;
-					coords[0] = box.x;
-					coords[1] = box.y-10;
-
-					commands[1] = 2;
-					coords[2] = box.x+box.width/2/3;
-					coords[3] = box.y-10-box.height/2/3;
-					
-					commands[2] = 2;
-					coords[4] = box.x;
-					coords[5] = box.y-35;
-					shape.graphics.drawPath(commands,coords);
-					shape.graphics.endFill();
-				}
-				
-				
-				
-				
-				/*if ((player.x >= box.x-box.width && player.x <= box.x+box.width) && (player.y >= box.y-box.height && player.y <= box.y+box.height)) {
-					shape.graphics.lineStyle(1,0,0.5);
-					var randZ = 1;
-					if (box.rand) {
-						randZ = -1;
-					}
-					shape.graphics.moveTo(box.x,box.y-box.height/2);
-					shape.graphics.lineTo(box.x+box.width/2*randZ,box.y);
-					shape.graphics.lineTo(box.x+box.width*randZ,box.y-box.height/2);
-					shape.graphics.lineTo(box.x+box.width/2*randZ,box.y-box.height);
-					shape.graphics.lineTo(box.x,box.y-box.height/2);
-					
-					if(box.bothCollision){
-						shape.graphics.moveTo(box.x+50,box.y-box.height/2+25);
-						shape.graphics.lineTo(box.x+box.width/2*randZ*(-1),box.y);
-						shape.graphics.lineTo(box.x+box.width*randZ*(-1),box.y-box.height/2);
-						shape.graphics.lineTo(box.x+50+box.width/2*randZ*(-1),box.y-box.height+25);
-						shape.graphics.lineTo(box.x+50,box.y-box.height/2+25);
-					}
-				}*/
-			}
-		}
-
 		function animateUI():void {
 			logo.y += (logo.movY-logo.y)/10;
 			gameInfo.y += (gameInfo.movY-gameInfo.y)/10;
@@ -975,10 +709,10 @@
 			}
 
 			if (spaceToPlay.alpha > 1) alphaF = false;
-			if (spaceToPlay.alpha < 0 && !startGame) alphaF = true;
+			if (spaceToPlay.alpha < 0 && !Game.isStarted) alphaF = true;
 			
 			if (alphaF) spaceToPlay.alpha += 0.025; else if(!alphaF) spaceToPlay.alpha -= 0.025;
-			if (startGame) {
+			if (Game.isStarted) {
 				spaceToPlay.alpha -= 0.05;
 				if (spaceToPlay.alpha <= 0) {
 					spaceToPlay.alpha = 0;

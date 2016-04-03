@@ -1,6 +1,19 @@
 ﻿package  {
 	
+	import flash.geom.ColorTransform;
+	import flash.geom.Matrix;
+	
 	public class Box {
+		
+		public static var matrix:Matrix = new Matrix();
+		
+		public static var firstColor:ColorTransform = new ColorTransform();
+		public static var toFirstColor:ColorTransform = new ColorTransform();
+		
+		public static var secondColor:ColorTransform = new ColorTransform();
+		public static var toSecondColor:ColorTransform = new ColorTransform();
+		
+		public static var colorList:Array = new Array();
 		
 		public var x:int = 0;
 		public var y:int = 0;
@@ -39,6 +52,7 @@
 				}
 			}
 		}
+		
 	}
 	
 }
