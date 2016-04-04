@@ -104,9 +104,8 @@
 		
 		public function eachBox(callback:Function):void
 		{
-			for(i = getLastIndex(); i >= 0; i--) {
-				box = getOnIndex(i);
-				callback(box);
+			for(var i:int = getLastIndex(); i >= 0; i--) {
+				callback(getOnIndex(i));
 			}
 		}
 		

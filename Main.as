@@ -24,8 +24,6 @@
 	import vk.events.*;
 	import vk.ui.VKButton;
 	
-	import Box;
-	
 	public class Main extends Sprite {
 		
 		private var loader:URLLoader = new URLLoader();
@@ -33,16 +31,9 @@
 		
 		var spaceDown:Boolean = false;
 		
-		var player:Player,
-			shape:Shape,
-			shape2:Shape,
-			boxCollection:BoxCollection = new BoxCollection();
+		var shape:Shape,
+			shape2:Shape;
 		
-		var flashVars: Object = stage.loaderInfo.parameters as Object;
-		var VK: APIConnection = new APIConnection(flashVars);
-		
-		var alphaF:Boolean = true;
-		var addPlayer:Boolean = false;
 		
 		var date:Date = new Date();
 		var lastTime = date.getTime();
@@ -50,21 +41,12 @@
 		var fpsField:TextField = new TextField();
 		
 		var fps:int = 0;
-		var scoreField:TextField = new TextField();
-		var format:TextFormat = new TextFormat();
-		
-		public var ui:UI = new UI();
 		
 		var tf: TextField;
-		
-		var gamesPlayed:int;
-		var bestScore:int;
-		
-		var lastBox:Box;
-		var box:Box;
-		
+				
 		public function Main() {
 			Game.SetStage(stage);
+			Game.Init();
 			
 			tf = new TextField();
 			tf.x = 10;
@@ -75,22 +57,9 @@
 			stage.addChild(tf);
 			//tf.appendText(flashVars['secret']+'\n'+flashVars['sid']+'');
 			
-			format.font = "Ubahn";
-			format.color = 0x2C2C2C;
-			format.size = 42;
-			scoreField.defaultTextFormat = format;
 			
-			format.color = 0x2C2C2C;
-			format.size = 24;
-			format.align = 'center';
-			bestScoreField.defaultTextFormat = format;
-			gamesPlayedField.defaultTextFormat = format;
 			
-			format.size = 60;
-			gameOverScoreField.defaultTextFormat = format;
-			gameOverBestScoreField.defaultTextFormat = format;
-			
-			VK.api('getProfiles', { uids: flashVars['viewer_id'], fields: 'photo_100' }, fetchUserInfo, onApiRequestFail);
+			Game.VK.api('getProfiles', { uids: Game.flashVars['viewer_id'], fields: 'photo_100' }, fetchUserInfo, onApiRequestFail);
 			/*VK.api('storage.set', { key:'bestScore',value:0,user_id:flashVars['viewer_id']}, function(){
 			}, function(){});*/
 			
@@ -119,13 +88,13 @@
 			photoLoader.y = (400-photoLoader.height)/2;
 			//addChild(photoLoader);
 			
-			VK.api('storage.get', { key:'gamesPlayed',user_id:flashVars['viewer_id']}, function(data){
-				gamesPlayed = parseInt(data);
-				gamesPlayedField.text = 'GAMES PLAYED: '+gamesPlayed;
+			Game.VK.api('storage.get', { key: 'gamesPlayed',user_id: Game.flashVars['viewer_id']}, function(data){
+				Game.player.gamesPlayed = parseInt(data);
+				Game.ui.gamesPlayedField.text = 'GAMES PLAYED: ' + Game.player.gamesPlayed;
 				
-				VK.api('storage.get', { key:'bestScore',user_id:flashVars['viewer_id']}, function(data){
-					bestScore = parseInt(data);
-					bestScoreField.text = 'BEST SCORE: '+bestScore;
+				Game.VK.api('storage.get', { key: 'bestScore',user_id: Game.flashVars['viewer_id']}, function(data){
+					Game.player.bestScore = parseInt(data);
+					Game.ui.bestScoreField.text = 'BEST SCORE: ' + Game.player.bestScore;
 					initApp();
 				}, function(){});
 			}, function(){});
@@ -158,9 +127,8 @@
 			* создание персонажа
 			*
 			*/
-			player = new Player(stage.stageWidth/2, stage.stageHeight/2);
 			//player.cacheAsBitmap = true;
-			stage.addChild(player);
+			stage.addChild(Game.player);
 
 			/*
 			*
@@ -178,31 +146,28 @@
 			* создание 20 платформ
 			*
 			*/
-			boxCollection.generate();				
+			Game.boxCollection.generate();				
 			
 			fpsField.x = 10;
 			fpsField.y = 10;
 			fpsField.width = 500;
 			stage.addChild(fpsField);
 			setInterval(function(){
-				fpsField.text = 'FPS: '+Math.round(fps)+'\nID: '+flashVars['viewer_id']+'\nMemory: '+System.totalMemory/1024/1024;
+				fpsField.text = 'FPS: '+Math.round(fps)+'\nID: ' + Game.flashVars['viewer_id']+'\nMemory: '+System.totalMemory/1024/1024;
 			}, 400);
 			/*
 			*
 			* Добавление текста со счетом
 			*
 			*/
-			scoreField.x = stage.stageWidth-100;
-			scoreField.y = 10;
-			scoreField.selectable = false;
 
 
-			stage.addChild(ui.logo);
-			stage.addChild(ui.gameInfo);
-			stage.addChild(ui.spaceToPlay);
+			stage.addChild(Game.ui.logo);
+			stage.addChild(Game.ui.gameInfo);
+			stage.addChild(Game.ui.spaceToPlay);
 
-			ui.scoreText.addChild(ui.gameOverScoreField);
-			ui.scoreText.addChild(ui.gameOverBestScoreField);
+			Game.ui.scoreText.addChild(Game.ui.gameOverScoreField);
+			Game.ui.scoreText.addChild(Game.ui.gameOverBestScoreField);
 					
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpFunc);
@@ -219,11 +184,11 @@
 			fps = 1000.0 /(now - lastTime);
 			
 			
-			player.nextLevel();
+			Game.player.nextLevel();
 			
-			scoreField.text = player.score.toString();
+			Game.ui.scoreField.text = Game.player.score.toString();
 			
-			ui.animate();
+			Game.ui.animate();
 			
 			shape.graphics.clear();
 			shape2.graphics.clear();
@@ -233,16 +198,16 @@
 	
 			
 			if (Game.isStarted && !Game.isOver) {
-				player.updateFrame(dt);
+				Game.player.updateFrame(dt, shape);
 			}
 			
 			if (!Game.isStarted && !Game.isOver) {
-				boxCollection.eachBox(function(box){
+				Game.boxCollection.eachBox(function(box){
 					Render.box(box, shape, -Game.stage.stageHeight/2);
 				});
 			}
 			if (Game.isOver) {
-				player.gameOverUpdate();
+				Game.player.gameOverUpdate(shape);
 			}
 
 			/*
@@ -263,20 +228,20 @@
 			if(e.keyCode === 32 && !spaceDown) {
 				spaceDown = true;
 				if (!Game.isStarted) {
-					stage.addChild(scoreField);
+					stage.addChild(Game.ui.scoreField);
 					
 					
-					stage.removeChild(logo);
-					stage.removeChild(gameInfo);
-					stage.removeChild(spaceToPlay);
+					stage.removeChild(Game.ui.logo);
+					stage.removeChild(Game.ui.gameInfo);
+					stage.removeChild(Game.ui.spaceToPlay);
 					Game.isStarted = true;
-					player.score -= 1;
-					logo.movY = -100;
-					gameInfo.movY = stage.stageHeight+100;
+					Game.player.score -= 1;
+					Game.ui.logo.movY = -100;
+					Game.ui.gameInfo.movY = stage.stageHeight+100;
 				}
 				if (!Game.isOver) {
-					player.rigth = !player.rigth;
-					player.score += 1;
+					Game.player.rigth = !Game.player.rigth;
+					Game.player.score += 1;
 				}
 			}
 			if(e.keyCode === 86) {
@@ -290,82 +255,45 @@
 		}
 
 		function mouseDown(e:MouseEvent):void {
-			stage.addChild(logo);
-			stage.addChild(gameInfo);
-			stage.addChild(spaceToPlay);
+			stage.addChild(Game.ui.logo);
+			stage.addChild(Game.ui.gameInfo);
+			stage.addChild(Game.ui.spaceToPlay);
 			retryGame();
-		}
-
-		/*
-		*
-		* дополнительные функции
-		*
-		*/
-		function lengthdirX(len, dir):Number{
-			return Math.cos(dir*Math.PI/180)*len;
-		}
-
-		function lengthdirY(len, dir):Number{
-			return Math.sin(dir*Math.PI/180)*len;
 		}
 
 		function retryGame():void {
 			setTimeout(function(){
-				gameOverText.movX = stage.stageWidth+gameOverText.width;
+				Game.ui.gameOverText.movX = stage.stageWidth + Game.ui.gameOverText.width;
 			},0);
 			setTimeout(function(){
-				scoreText.movX = stage.stageWidth+scoreText.width;
+				Game.ui.scoreText.movX = stage.stageWidth + Game.ui.scoreText.width;
 			},50);
 			setTimeout(function(){
-				retryButton.movX = stage.stageWidth+retryButton.width;
+				Game.ui.retryButton.movX = stage.stageWidth + Game.ui.retryButton.width;
 			},100);
 			setTimeout(function(){
-				shareButton.movX = stage.stageWidth+shareButton.width;
+				Game.ui.shareButton.movX = stage.stageWidth + Game.ui.shareButton.width;
 			},150);
 			stage.removeChild(shape2);
 			
-			player.score = 0;
-			player.rigth = false;
-			player.x = stage.stageWidth/2;
-			player.y = stage.stageHeight/2;
+			Game.player.score = 0;
+			Game.player.rigth = false;
+			Game.player.x = stage.stageWidth/2;
+			Game.player.y = stage.stageHeight/2;
 			Game.isStarted = false;
 			Game.isOver = false;
-			addPlayer = false;
-			player.speed = 3;
+			Game.player.addPlayer = false;
+			Game.player.speed = 3;
+			Game.player.level = 0;
+			Game.player.newLevel = 0;;
 			
-			oldScoreF = newScoreF = 0;
+			Game.player.gravity = 0;
 			
-			gravity = 0;
+			Game.boxCollection.generate();
 			
-			boxCollection.generate();
-			
-			logo.movY = stage.stageHeight/2/3;
-			spaceToPlay.alpha = 0;
-			gameInfo.movY = stage.stageHeight/1.5;
-		}
-
-		function gameOverFunc():void {
-			
-			Box.toFirstColor.color = 0x3F6CA3;
-			
-			Box.toSecondColor.color = Box.toFirstColor.color;
-
-			Box.toSecondColor.redOffset += 100; if (Box.toSecondColor.redOffset > 255) Box.toSecondColor.redOffset = 255;
-			Box.toSecondColor.greenOffset += 100; if (Box.toSecondColor.greenOffset > 255) Box.toSecondColor.greenOffset = 255;
-			Box.toSecondColor.blueOffset += 100; if (Box.toSecondColor.blueOffset > 255) Box.toSecondColor.blueOffset = 255;
-			
-			setTimeout(function(){
-				gameOverText.movX = stage.stageWidth/2;
-			},200);
-			setTimeout(function(){
-				scoreText.movX = stage.stageWidth/2;
-			},300);
-			setTimeout(function(){
-				retryButton.movX = stage.stageWidth/2;
-			},400);
-			setTimeout(function(){
-				shareButton.movX = stage.stageWidth/2;
-			},500);
+			Game.ui.logo.movY = stage.stageHeight/2/3;
+			Game.ui.spaceToPlay.alpha = 0;
+			Game.ui.gameInfo.movY = stage.stageHeight/1.5;
 		}
 		
 		function toColorAnim(fromColor, toColor):ColorTransform {

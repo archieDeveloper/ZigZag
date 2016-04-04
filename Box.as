@@ -59,7 +59,7 @@
 			if (y - Game.stage.stageHeight - height / 2 + Game.stage.stageHeight / 3 > 0) {
 				y += 6;
 			}
-			y += arrowsY;
+			y += Game.player.arrowsY;
 		}
 		
 	}
