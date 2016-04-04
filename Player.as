@@ -22,10 +22,10 @@
 		public var rigth: Boolean = false;
 
 		// Перемещение по X
-		public var arrowsX: int = 0;
+		public var arrowsX: Number = 0;
 
 		// Перемещение по Y
-		public var arrowsY: int = 0;
+		public var arrowsY: Number = 0;
 
 		// Гравитация
 		public var gravity: Number = 0;
@@ -60,7 +60,7 @@
 			return Math.sin(dir * Math.PI / 180) * len;
 		}
 
-		public function updateFrame(deltaTime: int, shape: Shape): void {
+		public function updateFrame(deltaTime: Number, shape: Shape): void {
 			arrowsX = lengthdirX((speed * 100) * deltaTime, 26.57);
 			arrowsY = lengthdirY((speed * 100) * deltaTime, 26.57);
 
@@ -116,8 +116,41 @@
 						}
 					}
 
-					collisionsss(arrPoint);
+					var coll: Boolean = false;
+
+					for (var a = 0, b = arrPoint.length - 1; a < arrPoint.length; b = a++) {
+						if (((arrPoint[a][1] > y) != (arrPoint[b][1] > y)) && (x < (arrPoint[b][0] - arrPoint[a][0]) * (y - arrPoint[a][1]) / (arrPoint[b][1] - arrPoint[a][1]) + arrPoint[a][0])) {
+							coll = !coll;
+						}
+					}
+
+					if (box.bothCollision) {
+						arrPoint = [
+							[boxX + 50, boxY - boxH / 2 + 25],
+							[boxX + boxW / 2 * randZ * (-1), boxY],
+							[boxX + boxW * randZ * (-1), boxY - boxH / 2],
+							[boxX + 50 + boxW / 2 * randZ * (-1), boxY - boxH + 25]
+						];
+						for (a = 0, b = arrPoint.length - 1; a < arrPoint.length; b = a++) {
+							if (((arrPoint[a][1] > y) != (arrPoint[b][1] > y)) && (x < (arrPoint[b][0] - arrPoint[a][0]) * (y - arrPoint[a][1]) / (arrPoint[b][1] - arrPoint[a][1]) + arrPoint[a][0])) {
+								coll = !coll;
+							}
+						}
+					}
+
+					if (coll) {
+						rigth = !box.rand;
+						Game.isOver = true;
+						gameOverFunc();
+						Game.stage.removeEventListener(KeyboardEvent.KEY_DOWN, Game.keyDownFunc);
+						Game.ui.retryButton.removeEventListener(MouseEvent.MOUSE_DOWN, Game.mouseDown);
+						setTimeout(function () {
+							Game.stage.addEventListener(KeyboardEvent.KEY_DOWN, Game.keyDownFunc);
+							Game.ui.retryButton.addEventListener(MouseEvent.MOUSE_DOWN, Game.mouseDown);
+						}, 500);
+					}
 				}
+				box.update(deltaTime);
 				Render.box(box, shape, -Game.stage.stageHeight / 2);
 			}
 			x += arrowsX * (rigth ? 1 : -1);
@@ -222,39 +255,7 @@
 		}
 
 		public function collisionsss(arrPoint: Array): void {
-			var coll: Boolean = false;
 
-			for (var a = 0, b = arrPoint.length - 1; a < arrPoint.length; b = a++) {
-				if (((arrPoint[a][1] > y) != (arrPoint[b][1] > y)) && (x < (arrPoint[b][0] - arrPoint[a][0]) * (y - arrPoint[a][1]) / (arrPoint[b][1] - arrPoint[a][1]) + arrPoint[a][0])) {
-					coll = !coll;
-				}
-			}
-
-			/*if(box.bothCollision) {
-				arrPoint = [
-					[boxX+50,boxY-boxH/2+25],
-					[boxX+boxW/2*randZ*(-1),boxY],
-					[boxX+boxW*randZ*(-1),boxY-boxH/2],
-					[boxX+50+boxW/2*randZ*(-1),boxY-boxH+25]
-				];
-				for (a = 0, b = arrPoint.length - 1; a < arrPoint.length; b = a++) {
-				if (((arrPoint[a][1] > y) != (arrPoint[b][1] > y)) && (x < (arrPoint[b][0] - arrPoint[a][0]) * (y - arrPoint[a][1]) / (arrPoint[b][1] - arrPoint[a][1]) + arrPoint[a][0])) {
-						coll = !coll;
-					}
-				}
-			}*/
-
-			/*if (coll) {
-				rigth = !box.rand;
-				Game.isOver = true;
-				gameOverFunc();
-				Game.stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
-				Game.ui.retryButton.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
-				setTimeout(function(){
-					Game.stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
-					Game.ui.retryButton.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
-				},500);
-			}*/
 		}
 
 		public function gameOverFunc(): void {
