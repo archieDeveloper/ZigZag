@@ -1,10 +1,16 @@
-﻿package  {
+﻿package scripts.components
+{
 	
 	import flash.display.Shape;
 	import flash.display.GradientType;
 	import flash.geom.Matrix;
 	import flash.display.SpreadMethod;
 	import flash.display.InterpolationMethod;
+	
+	import scripts.actors.Box;
+	import scripts.scenes.Game;
+	
+	
 	
 	public class Render {
 		
@@ -94,7 +100,7 @@
 					Render.bonus(box, shape);
 				}
 				
-				/*if ((player.x >= box.x-box.width && player.x <= box.x+box.width) && (player.y >= box.y-box.height && player.y <= box.y+box.height)) {
+				if ((Game.player.x >= box.x-box.width && Game.player.x <= box.x+box.width) && (Game.player.y >= box.y-box.height && Game.player.y <= box.y+box.height)) {
 					shape.graphics.lineStyle(1,0,0.5);
 					var randZ = 1;
 					if (box.rand) {
@@ -113,7 +119,7 @@
 						shape.graphics.lineTo(box.x+50+box.width/2*randZ*(-1),box.y-box.height+25);
 						shape.graphics.lineTo(box.x+50,box.y-box.height/2+25);
 					}
-				}*/
+				}
 			}
 			
 		}

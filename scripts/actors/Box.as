@@ -1,7 +1,9 @@
-﻿package {
+﻿package scripts.actors
+{
 
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
+	import scripts.scenes.Game;
 
 	public class Box {
 

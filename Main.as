@@ -10,6 +10,13 @@
 
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	
+	import scripts.scenes.Game;
+	import scripts.actors.Box;
+	import scripts.components.Render;
+	
+	
+	
 
 	public class Main extends Sprite {
 

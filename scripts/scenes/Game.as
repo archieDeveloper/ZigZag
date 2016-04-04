@@ -1,4 +1,5 @@
-﻿package {
+﻿package scripts.scenes
+{
 
 	import flash.display.Stage;
 	import flash.events.*;
@@ -9,6 +10,10 @@
 	import vk.APIConnection;
 	import vk.events.*;
 	import vk.ui.VKButton;
+	
+	import scripts.actors.Player;
+	import scripts.components.BoxCollection;
+	import scripts.components.UI;
 
 	public class Game {
 
@@ -44,6 +49,7 @@
 
 			player = new Player();
 			boxCollection = new BoxCollection();
+			trace(player.score);
 			ui = new UI();
 		}
 

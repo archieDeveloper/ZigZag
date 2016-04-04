@@ -1,5 +1,8 @@
-﻿package
+﻿package scripts.components
 {
+	
+	import scripts.actors.Box;
+	import scripts.scenes.Game;
 	
 	public class BoxCollection
 	{

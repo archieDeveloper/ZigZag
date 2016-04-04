@@ -1,4 +1,5 @@
-﻿package {
+﻿package scripts.actors
+{
 
 	import flash.display.Sprite;
 	import flash.display.Stage;
@@ -6,6 +7,9 @@
 	import flash.geom.ColorTransform;
 	import flash.events.*;
 	import flash.utils.*;
+	
+	import scripts.scenes.Game;
+	import scripts.components.Render;
 
 	public class Player extends Sprite {
 

@@ -1,8 +1,11 @@
-﻿package {
+﻿package scripts.components
+{
 
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.display.MovieClip;
+	
+	import scripts.scenes.Game;
 
 	public class UI {
 
@@ -81,6 +84,7 @@
 			gameOverText.movX = Game.stage.stageWidth + gameOverText.width;
 			gameOverText.y = 100;
 
+			//trace(Game.player);
 			gameOverScoreField.text = Game.player.score.toString();
 			gameOverScoreField.width = 500;
 			gameOverScoreField.y -= 70;
