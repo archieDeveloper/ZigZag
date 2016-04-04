@@ -52,6 +52,31 @@
 			}
 		}
 		
+		public function createBox():void
+		{
+			var newBoxPoint:Box = getFirst();
+			
+			for(var i:int = 0, thisShapeLen:int = getLastIndex(); i < thisShapeLen; i++) {
+				setOnIndex(i, getOnIndex(i+1));
+			}
+			
+			var rand:Boolean = Math.random()<.5;
+			var thisShape:Object = getLast();
+			if ((thisShape.x > Game.stage.stageWidth-thisShape.width && rand) ||
+				(thisShape.x < thisShape.width && !rand)) rand = !rand;
+			
+			newBoxPoint.x = thisShape.x+(rand ? thisShape.width/2 : -thisShape.width/2);
+			newBoxPoint.y = thisShape.y-thisShape.height/2;
+			newBoxPoint.width = 100;
+			newBoxPoint.height = 50;
+			newBoxPoint.rand = rand;
+			newBoxPoint.bothCollision = false;
+			newBoxPoint.bonus = Math.floor(Math.random()*5) ? false : true;
+
+			thisShape.rand = rand;
+			setOnIndex(thisShapeLen, newBoxPoint);
+		}
+		
 		public function getOnIndex(index:int):Box
 		{
 			return boxCollection[index];
@@ -75,6 +100,14 @@
 		public function setOnIndex(index:int, box:Box):void
 		{
 			boxCollection[index] = box;
+		}
+		
+		public function eachBox(callback:Function):void
+		{
+			for(i = getLastIndex(); i >= 0; i--) {
+				box = getOnIndex(i);
+				callback(box);
+			}
 		}
 		
 	}

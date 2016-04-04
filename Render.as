@@ -11,9 +11,10 @@
 		public function Render() {
 		}
 				
-		public static function box(box:Box, shape:Shape, ifY:int) {
+		public static function box(box:Box, shape:Shape, ifY:int)
+		{
 			
-			if(box.y > ifY && !(box.y > Game.stage.stageHeight+box.height/2) && !(box.y < -box.height/2-150)){
+			if (box.y > ifY && !(box.y > Game.stage.stageHeight+box.height/2) && !(box.y < -box.height/2-150)) {
 				shape.graphics.beginFill(Box.firstColor.color);
 
 				var commands:Vector.<int>  = new Vector.<int>(4,true);
@@ -60,14 +61,16 @@
 				shape.graphics.endFill();
 				
 				
-				shape.graphics.beginGradientFill(GradientType.RADIAL,
-									[Box.secondColor.color, Box.firstColor.color], 
-									[1, 1], 
-									[0, 255],  
-									Box.matrix,  
-									SpreadMethod.PAD,  
-									InterpolationMethod.LINEAR_RGB,  
-									0);
+				shape.graphics.beginGradientFill(
+					GradientType.RADIAL,
+					[Box.secondColor.color, Box.firstColor.color], 
+					[1, 1], 
+					[0, 255],  
+					Box.matrix,  
+					SpreadMethod.PAD,  
+					InterpolationMethod.LINEAR_RGB,  
+					0
+				);
 				
 				commands[0] = 1;
 				coords[0] = box.x-box.width/2;
@@ -116,9 +119,10 @@
 		}
 		
 		
-		public static function bonus(box:Box, shape:Shape) {
+		public static function bonus(box:Box, shape:Shape) 
+		{
 			var commands:Vector.<int>  = new Vector.<int>(4,true);
-				var coords:Vector.<Number>  = new Vector.<Number>(8,true);
+			var coords:Vector.<Number>  = new Vector.<Number>(8,true);
 			shape.graphics.beginFill(0xFD65EE);
 			commands = new Vector.<int>(3,true);
 			coords = new Vector.<Number>(6,true);

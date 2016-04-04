@@ -15,6 +15,7 @@
 		public function Game() {
 		}
 		
+		// Ссылка на главый объект Stage
 		public static function SetStage(stageRef:Stage) {
 			stage = stageRef;
 		}

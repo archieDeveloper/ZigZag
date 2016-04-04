@@ -36,16 +36,12 @@
 		var player:Player,
 			shape:Shape,
 			shape2:Shape,
-			//shapeArray:Vector.<Object>,
-			boxCollection:BoxCollection = new BoxCollection(),
-			newScoreF:int = 0,
-			oldScoreF:int = 0;
+			boxCollection:BoxCollection = new BoxCollection();
 		
 		var flashVars: Object = stage.loaderInfo.parameters as Object;
 		var VK: APIConnection = new APIConnection(flashVars);
 		
 		var alphaF:Boolean = true;
-		var gravity:Number = 0;
 		var addPlayer:Boolean = false;
 		
 		var date:Date = new Date();
@@ -56,18 +52,8 @@
 		var fps:int = 0;
 		var scoreField:TextField = new TextField();
 		var format:TextFormat = new TextFormat();
-		var logo:Logo = new Logo();
-		var spaceToPlay:SpaceToPlay = new SpaceToPlay();
-		var gameInfo:MovieClip = new MovieClip();
-		var bestScoreField:TextField = new TextField();
-		var gamesPlayedField:TextField = new TextField();
-		var gameOverText:GameOverText = new GameOverText();
-		var retryButton:RetryButton = new RetryButton();
-		var scoreText:ScoreText = new ScoreText();
-		var shareButton:ShareButton = new ShareButton();
 		
-		var gameOverScoreField:TextField = new TextField();
-		var gameOverBestScoreField:TextField = new TextField();
+		public var ui:UI = new UI();
 		
 		var tf: TextField;
 		
@@ -146,8 +132,6 @@
 		}
 		
 		public function initApp():void {
-			
-			
 			Box.matrix.createGradientBox(stage.stageWidth*2, stage.stageHeight,0,-stage.stageWidth/2,0);
 			
 			Box.firstColor.color = 0x3F6CA3;
@@ -213,78 +197,13 @@
 			scoreField.selectable = false;
 
 
-			logo.cacheAsBitmap = true;
+			stage.addChild(ui.logo);
+			stage.addChild(ui.gameInfo);
+			stage.addChild(ui.spaceToPlay);
 
-			logo.x = stage.stageWidth/2;
-			logo.y = -100;
-
-			logo.movY = stage.stageHeight/2/3;
-
-
-			spaceToPlay.x = stage.stageWidth/2;
-			spaceToPlay.y = stage.stageHeight/2/1.5;
-
-			spaceToPlay.alpha = 0;
-			
-			bestScoreField.text = 'BEST SCORE: '+bestScore;
-			bestScoreField.width = 500;
-			bestScoreField.x = -bestScoreField.width/2;
-			
-			gamesPlayedField.text = 'GAMES PLAYED: '+gamesPlayed;
-			gamesPlayedField.width = 500;
-			gamesPlayedField.x = -gamesPlayedField.width/2;
-			gamesPlayedField.y = 40;
-
-			gameInfo.addChild(bestScoreField);
-			gameInfo.addChild(gamesPlayedField);
-			gameInfo.x = stage.stageWidth/2;
-			gameInfo.y = stage.stageHeight+100;
-
-			gameInfo.movY = stage.stageHeight/1.5;
-
-			stage.addChild(logo);
-			stage.addChild(gameInfo);
-			stage.addChild(spaceToPlay);
-
-
-			gameOverText.cacheAsBitmap = true;
-			gameOverText.x = stage.stageWidth+gameOverText.width;
-			gameOverText.movX = stage.stageWidth+gameOverText.width;
-			gameOverText.y = 100;
-
-
-			gameOverScoreField.text = player.score.toString();
-			gameOverScoreField.width = 500;
-			gameOverScoreField.y -= 70;
-			gameOverScoreField.x = -gameOverScoreField.width/2;
-			
-			
-			gameOverBestScoreField.text = ''+bestScore;
-			gameOverBestScoreField.width = 500;
-			gameOverBestScoreField.y += 30;
-			gameOverBestScoreField.x = -gameOverBestScoreField.width/2;
-			
-
-			scoreText.addChild(gameOverScoreField);
-			scoreText.addChild(gameOverBestScoreField);
-
-			
-			scoreText.x = stage.stageWidth+scoreText.width;
-			scoreText.movX = stage.stageWidth+scoreText.width;
-			scoreText.y = 300;
-
-
-			retryButton.cacheAsBitmap = true;
-			retryButton.x = stage.stageWidth+retryButton.width;
-			retryButton.movX = stage.stageWidth+retryButton.width;
-			retryButton.y = 480;
-
-
-			shareButton.cacheAsBitmap = true;
-			shareButton.x = stage.stageWidth+shareButton.width;
-			shareButton.movX = stage.stageWidth+shareButton.width;
-			shareButton.y = 580;
-			
+			ui.scoreText.addChild(ui.gameOverScoreField);
+			ui.scoreText.addChild(ui.gameOverBestScoreField);
+					
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
 			stage.addEventListener(KeyboardEvent.KEY_UP, keyUpFunc);
 			stage.addEventListener(Event.ENTER_FRAME, enterFramePhy);
@@ -299,212 +218,31 @@
 				i,a,b;
 			fps = 1000.0 /(now - lastTime);
 			
-			//trace(dt);
 			
-			newScoreF = Math.floor(player.score/50);
-			if(newScoreF > oldScoreF) {
-				oldScoreF = newScoreF;
-				
-				player.speed += 0.05;
-				
-				Box.toFirstColor.color = Box.colorList[Math.floor(Math.random()*5)];
-				Box.toSecondColor.color = Box.toFirstColor.color;
-				
-				Box.toSecondColor.redOffset += 100; if (Box.toSecondColor.redOffset > 255) Box.toSecondColor.redOffset = 255;
-				Box.toSecondColor.greenOffset += 100; if (Box.toSecondColor.greenOffset > 255) Box.toSecondColor.greenOffset = 255;
-				Box.toSecondColor.blueOffset += 100; if (Box.toSecondColor.blueOffset > 255) Box.toSecondColor.blueOffset = 255;
-			}
+			player.nextLevel();
 			
 			scoreField.text = player.score.toString();
 			
-			animateUI();
+			ui.animate();
 			
 			shape.graphics.clear();
 			shape2.graphics.clear();
 			
 			Box.firstColor = toColorAnim(Box.firstColor, Box.toFirstColor);
 			Box.secondColor = toColorAnim(Box.secondColor, Box.toSecondColor);
-			/*player.x = mouseX;
-			player.y = mouseY;*/
+	
+			
 			if (Game.isStarted && !Game.isOver) {
-				player.arrowsX = lengthdirX((player.speed*100)*dt,26.57);
-				player.arrowsY = lengthdirY((player.speed*100)*dt,26.57);
-				
-				
-				
-				/*player.arrowsX = lengthdirX((player.speed+2),26.57);
-				player.arrowsY = lengthdirY((player.speed+2),26.57);*/
-				
-				lastBox = boxCollection.getLast();
-				if (lastBox.y > -lastBox.height/2-150) {
-					createBox();
-				}
-				
-				var shapeArrayNum:int = boxCollection.getLastIndex();
-				
-				for(i = shapeArrayNum; i >= 0; i--) {
-					box = boxCollection.getOnIndex(i);
-					var boxX = box.x,
-						boxY = box.y,
-						boxW = box.width,
-						boxH = box.height;
-					if ((player.x >= boxX-boxW && player.x <= boxX+boxW) && (player.y >= boxY-boxH && player.y <= boxY+boxH)) {
-						//trace(i);
-						var randZ:int = 1;
-						if (box.rand) {
-							randZ = -1;
-						}
-						
-						var arrPoint:Array = [
-							[boxX,boxY-boxH/2],
-							[boxX+boxW/2*randZ,boxY],
-							[boxX+boxW*randZ,boxY-boxH/2],
-							[boxX+boxW/2*randZ,boxY-boxH]
-						];
-						
-						if(box.bonus) {
-							var arrPointBonus:Array = [
-								[boxX,boxY],
-								[boxX-boxW/2/3,boxY-10-boxH/2/3],
-								[boxX+boxW/2/3,boxY-10-boxH/2/3],
-								[boxX,boxY-35]
-							];
-							
-							var collBonus:Boolean = false;
-							
-							for (a = 0, b = arrPointBonus.length - 1; a < arrPointBonus.length; b = a++) {
-								if (((arrPointBonus[a][1] > player.y) != (arrPointBonus[b][1] > player.y)) && (player.x < (arrPointBonus[b][0] - arrPoint[a][0]) * (player.y - arrPointBonus[a][1]) / (arrPointBonus[b][1] - arrPointBonus[a][1]) + arrPointBonus[a][0])) {
-									collBonus = !collBonus;
-								}
-							}
-							
-							if (collBonus) {
-								box.bonus = false;
-								player.score += 2;
-							}
-						}
-						
-						var coll:Boolean = false;
-						
-						for (a = 0, b = arrPoint.length - 1; a < arrPoint.length; b = a++) {
-							if (((arrPoint[a][1] > player.y) != (arrPoint[b][1] > player.y)) && (player.x < (arrPoint[b][0] - arrPoint[a][0]) * (player.y - arrPoint[a][1]) / (arrPoint[b][1] - arrPoint[a][1]) + arrPoint[a][0])) {
-								coll = !coll;
-							}
-						}
-						
-						if(box.bothCollision){
-							arrPoint = [
-								[boxX+50,boxY-boxH/2+25],
-								[boxX+boxW/2*randZ*(-1),boxY],
-								[boxX+boxW*randZ*(-1),boxY-boxH/2],
-								[boxX+50+boxW/2*randZ*(-1),boxY-boxH+25]
-							];
-							for (a = 0, b = arrPoint.length - 1; a < arrPoint.length; b = a++) {
-							if (((arrPoint[a][1] > player.y) != (arrPoint[b][1] > player.y)) && (player.x < (arrPoint[b][0] - arrPoint[a][0]) * (player.y - arrPoint[a][1]) / (arrPoint[b][1] - arrPoint[a][1]) + arrPoint[a][0])) {
-									coll = !coll;
-								}
-							}
-						}
-						
-						if (coll){
-							player.rigth = !box.rand;
-							Game.isOver = true;
-							gameOverFunc();
-							stage.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
-							retryButton.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
-							setTimeout(function(){
-								stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDownFunc);
-								retryButton.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
-							},500);
-						}
-					}
-					if (boxY-stage.stageHeight-boxH/2 + stage.stageHeight/3 > 0){
-						box.y+=6;
-					}
-					box.y+=player.arrowsY;
-					Render.box(box,shape,-stage.stageHeight/2);
-				}
-				player.x += player.arrowsX * (player.rigth ? 1 : -1);
+				player.updateFrame(dt);
 			}
 			
 			if (!Game.isStarted && !Game.isOver) {
-				shapeArrayNum = boxCollection.getLastIndex();
-				
-				for(i = shapeArrayNum; i >= 0; i--) {
-					box = boxCollection.getOnIndex(i);
-					Render.box(box,shape,-stage.stageHeight/2);
-				}
+				boxCollection.eachBox(function(box){
+					Render.box(box, shape, -Game.stage.stageHeight/2);
+				});
 			}
 			if (Game.isOver) {
-				shapeArrayNum = boxCollection.getLastIndex();
-				
-				for(i = shapeArrayNum; i >= 0; i--) {
-					box = boxCollection.getOnIndex(i);
-					if (box.y-stage.stageHeight-box.height/2 + stage.stageHeight/3 > 0){
-						box.y+=6;
-					}
-					Render.box(box,shape,-stage.stageHeight/2);
-					Render.box(box,shape2,stage.stageHeight/2);
-				}
-				
-				if (!addPlayer){
-					stage.addChild(shape2);
-					
-					stage.addChild(gameOverText);
-					stage.addChild(scoreText);
-					stage.addChild(retryButton);
-					stage.addChild(shareButton);
-					
-					stage.removeChild(scoreField);
-					
-					addPlayer = true;
-					gamesPlayed += 1;
-					gamesPlayedField.text = 'GAMES PLAYED: '+gamesPlayed;
-					gameOverScoreField.text = player.score.toString();
-					VK.api('storage.set', { key:'gamesPlayed', value:gamesPlayed, user_id:flashVars['viewer_id'] }, function(){}, function(){});
-					
-					//смена цвета плашки со счетом
-					var my_color:ColorTransform = new ColorTransform();
-					my_color.color = 0xE1E1E1;
-					scoreText.getChildAt(0).transform.colorTransform = my_color;
-					
-					my_color.color = 0x333333;
-					scoreText.getChildAt(1).transform.colorTransform = my_color;
-					scoreText.getChildAt(2).transform.colorTransform = my_color;
-					gameOverScoreField.textColor = my_color.color;
-					gameOverBestScoreField.textColor = my_color.color;
-					//конец смены цвета
-					if(player.score > bestScore){
-						bestScore = player.score;
-						bestScoreField.text = 'BEST SCORE: '+bestScore;
-						gameOverBestScoreField.text = ''+bestScore;
-						
-						//смена цвета плашки со счетом
-						my_color = new ColorTransform();
-						my_color.color = 0xFD44E8;
-						scoreText.getChildAt(0).transform.colorTransform = my_color;
-						
-						my_color.color = 0xFFFEFE;
-						scoreText.getChildAt(1).transform.colorTransform = my_color;
-						scoreText.getChildAt(2).transform.colorTransform = my_color;
-						gameOverScoreField.textColor = my_color.color;
-						gameOverBestScoreField.textColor = my_color.color;
-						//конец смены цвета
-						
-						//stage.addChild();
-						VK.api('storage.set', { key:'bestScore', value:bestScore, user_id:flashVars['viewer_id'] }, function(){}, function(){});
-					} else {
-					}
-				}
-				
-				
-				if (player.rigth) {
-					player.x += player.arrowsX;
-				} else {
-					player.x -= player.arrowsX;
-				}
-				gravity += 0.4;
-				player.y += gravity; 
+				player.gameOverUpdate();
 			}
 
 			/*
@@ -569,30 +307,6 @@
 
 		function lengthdirY(len, dir):Number{
 			return Math.sin(dir*Math.PI/180)*len;
-		}
-
-		function createBox():void {
-			var newBoxPoint:Box = boxCollection.getFirst();
-			
-			for(var i:int = 0, thisShapeLen:int = boxCollection.getLastIndex(); i < thisShapeLen; i++){
-				boxCollection.setOnIndex(i, boxCollection.getOnIndex(i+1));
-			}
-			
-			var rand:Boolean = Math.random()<.5;
-			var thisShape:Object = boxCollection.getLast();
-			if ((thisShape.x > stage.stageWidth-thisShape.width && rand) ||
-				(thisShape.x < thisShape.width && !rand)) rand = !rand;
-			
-			newBoxPoint.x = thisShape.x+(rand ? thisShape.width/2 : -thisShape.width/2);
-			newBoxPoint.y = thisShape.y-thisShape.height/2;
-			newBoxPoint.width = 100;
-			newBoxPoint.height = 50;
-			newBoxPoint.rand = rand;
-			newBoxPoint.bothCollision = false;
-			newBoxPoint.bonus = Math.floor(Math.random()*5) ? false : true;
-
-			thisShape.rand = rand;
-			boxCollection.setOnIndex(thisShapeLen, newBoxPoint);
 		}
 
 		function retryGame():void {
@@ -661,63 +375,6 @@
 			fromColor.blueOffset += (toColor.blueOffset-fromColor.blueOffset)/25;
 			
 			return fromColor;
-		}
-		
-		function animateUI():void {
-			logo.y += (logo.movY-logo.y)/10;
-			gameInfo.y += (gameInfo.movY-gameInfo.y)/10;
-			
-			if(gameInfo.visible = true && gameInfo.y > stage.stageHeight+gameInfo.height/2){
-				gameInfo.visible = false;
-			} else {
-				gameInfo.visible = true;
-			}
-			
-			if(logo.visible = true && logo.y < 0-logo.height/2){
-				logo.visible = false;
-			} else {
-				logo.visible = true;
-			}
-			
-			scoreText.x += (scoreText.movX-scoreText.x)/10;
-			retryButton.x += (retryButton.movX-retryButton.x)/10;
-			shareButton.x += (shareButton.movX-shareButton.x)/10;
-			gameOverText.x += (gameOverText.movX-gameOverText.x)/10;
-			
-			if(gameOverText.visible = true && gameOverText.x > stage.stageWidth+gameOverText.width/2){
-				gameOverText.visible = false;
-			} else {
-				gameOverText.visible = true;
-			}
-			
-			if(retryButton.visible = true && retryButton.x > stage.stageWidth+retryButton.width/2){
-				retryButton.visible = false;
-			} else {
-				retryButton.visible = true;
-			}
-			
-			if(shareButton.visible = true && shareButton.x > stage.stageWidth+shareButton.width/2){
-				shareButton.visible = false;
-			} else {
-				shareButton.visible = true;
-			}
-			
-			if(scoreText.visible = true && scoreText.x > stage.stageWidth+scoreText.width/2){
-				scoreText.visible = false;
-			} else {
-				scoreText.visible = true;
-			}
-
-			if (spaceToPlay.alpha > 1) alphaF = false;
-			if (spaceToPlay.alpha < 0 && !Game.isStarted) alphaF = true;
-			
-			if (alphaF) spaceToPlay.alpha += 0.025; else if(!alphaF) spaceToPlay.alpha -= 0.025;
-			if (Game.isStarted) {
-				spaceToPlay.alpha -= 0.05;
-				if (spaceToPlay.alpha <= 0) {
-					spaceToPlay.alpha = 0;
-				}
-			}
 		}
 	}
 	

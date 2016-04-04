@@ -26,7 +26,8 @@
 		
 		public var bonus:Boolean = false;
 		
-		public function Box(options = null) {
+		public function Box(options = null)
+		{
 			if (options != null) {
 				if (options.x != null) {
 					x = options.x;
@@ -51,6 +52,14 @@
 					bonus = options.bonus;
 				}
 			}
+		}
+		
+		public function update(deltaTime:int):void
+		{
+			if (y - Game.stage.stageHeight - height / 2 + Game.stage.stageHeight / 3 > 0) {
+				y += 6;
+			}
+			y += arrowsY;
 		}
 		
 	}
